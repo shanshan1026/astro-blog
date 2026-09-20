@@ -1,18 +1,32 @@
 {
-  "name": "astro-blog-cms",
-  "compatibility_date": "2026-09-20",
-  "compatibility_flags": ["nodejs_compat"],
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "astro-blog",
-      "database_id": "00000000-0000-0000-0000-000000000000"
-    }
-  ],
-  "r2_buckets": [
-    {
-      "binding": "MEDIA",
-      "bucket_name": "astro-blog-media"
-    }
-  ]
+	"name": "astro-blog-cms",
+	"main": "@astrojs/cloudflare/entrypoints/server",
+	"assets": {
+		"binding": "ASSETS",
+		"directory": "./dist/client"
+	},
+	"compatibility_date": "2026-09-20",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"kv_namespaces": [
+		{
+			"binding": "SESSION",
+			"id": "8ea3981a5ace4e97a72694e1a725ee27"
+		}
+	],
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "astro-blog",
+			"database_id": "d03eed0c-2416-48bc-9e85-fe7684842f0e",
+			"migrations_dir": "./migrations"
+		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "MEDIA",
+			"bucket_name": "astro-blog-media"
+		}
+	]
 }

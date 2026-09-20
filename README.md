@@ -25,13 +25,19 @@ npm run dev
 
 Open the local URL printed by Astro, then `/admin`. `DEV_AUTH_EMAIL` only works with Astro development mode on `localhost` or `127.0.0.1`; it cannot authenticate a production build. The seeded local owner is `owner@example.test`.
 
-## Cloudflare setup before deployment
+## Cloudflare deployment
 
-1. Create a D1 database named `astro-blog` and a **private** R2 bucket named `astro-blog-media`. Replace the zero UUID in `wrangler.jsonc` with the real D1 database ID.
-2. Apply `migrations/0001_init.sql` to the remote D1 database. Do **not** apply the local-owner seed remotely.
-3. Insert your real email in `users` with role `owner` (use a new UUID). The email must match the identity supplied by Cloudflare Access.
-4. Attach both public and admin custom domains to the Worker; set `ADMIN_HOST` to the admin hostname. Protect the entire admin hostname with a Cloudflare Access self-hosted application.
-5. Set `ACCESS_TEAM_DOMAIN` and `ACCESS_AUD` as Worker secrets, then deploy with `npm run deploy`. Never add Access settings or R2 credentials to browser code.
+The Worker is deployed at `https://astro-blog-cms.pengss1026.workers.dev`. Its D1 database (`astro-blog`), private R2 bucket (`astro-blog-media`), and session KV namespace are configured in `wrangler.jsonc`. The remote D1 schema from `migrations/0001_init.sql` has been applied. Do **not** apply the local-owner seed remotely.
+
+To deploy updates, authenticate with `npx wrangler login` if needed, then run `npm run deploy`. No custom domain is attached yet. The public homepage is live but has no articles until an editor publishes one.
+
+### Enable the admin UI
+
+Admin access remains disabled in production until Cloudflare Access is configured:
+
+1. Choose a separate admin hostname, attach it to the Worker, and protect the entire hostname with a Cloudflare Access self-hosted application. Add an allow policy for the intended editor identities. Set `ADMIN_HOST` to the admin hostname so admin routes are unavailable on the public hostname. Protecting only `/admin` is insufficient: draft-image previews also request `/media/*` on the admin hostname.
+2. Insert each allowed editor's real email in the remote D1 `users` table with the appropriate role. The email must match the identity supplied by Cloudflare Access.
+3. Set `ACCESS_TEAM_DOMAIN` and `ACCESS_AUD` as Worker secrets using the Access team domain and application audience tag, then redeploy. Never add these values or R2 credentials to browser code.
 
 Example remote owner SQL:
 
