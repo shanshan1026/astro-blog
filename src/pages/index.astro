@@ -1,0 +1,35 @@
+---
+import { env } from 'cloudflare:workers';
+import Base from '../layouts/Base.astro';
+
+interface Item { title: string; slug: string; excerpt: string; published_at: string; cover_media_id: string | null }
+const { results: posts } = await env.DB.prepare(`
+  SELECT r.title, r.slug, r.excerpt, p.published_at, r.cover_media_id
+  FROM posts p JOIN post_revisions r ON r.id = p.published_revision_id
+  WHERE p.status = 'published' ORDER BY p.published_at DESC LIMIT 30
+`).all<Item>();
+Astro.response.headers.set('Cache-Control', 'public, max-age=0, must-revalidate');
+---
+<Base title="Northstar Journal">
+  <section class="hero">
+    <p class="eyebrow">A place for ideas</p>
+    <h1>Thoughtful stories,<br />beautifully told.</h1>
+    <p>Notes, essays, and useful discoveries from our corner of the internet.</p>
+  </section>
+  <section class="story-section" aria-labelledby="latest-heading">
+    <div class="section-heading"><h2 id="latest-heading">Latest stories</h2><span>{posts.length} posts</span></div>
+    {posts.length ? (
+      <div class="story-grid">
+        {posts.map((post) => <a class="story-card" href={`/blog/${post.slug}`}>
+          {post.cover_media_id && <img src={`/media/${post.cover_media_id}`} alt="" loading="lazy" />}
+          <div class="story-content">
+            <time datetime={post.published_at}>{new Date(post.published_at).toLocaleDateString('en', { year: 'numeric', month: 'long', day: 'numeric' })}</time>
+            <h3>{post.title}</h3>
+            <p>{post.excerpt}</p>
+            <span>Read story <span aria-hidden="true">↗</span></span>
+          </div>
+        </a>)}
+      </div>
+    ) : <p class="empty-state">No stories yet. Your first published post will appear here.</p>}
+  </section>
+</Base>

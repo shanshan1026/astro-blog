@@ -1,0 +1,20 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getPublished } from '../../lib/posts';
+
+const post = await getPublished(Astro.params.slug ?? '');
+if (!post) Astro.response.status = 404;
+Astro.response.headers.set('Cache-Control', 'public, max-age=0, must-revalidate');
+---
+<Base title={post ? `${post.title} · Northstar Journal` : 'Not found · Northstar Journal'}>
+  {post ? <article class="article">
+    <a class="back-link" href="/">← All stories</a>
+    <header class="article-header">
+      <time datetime={post.published_at}>{new Date(post.published_at).toLocaleDateString('en', { year: 'numeric', month: 'long', day: 'numeric' })}</time>
+      <h1>{post.title}</h1>
+      {post.excerpt && <p>{post.excerpt}</p>}
+    </header>
+    {post.cover_media_id && <img class="article-cover" src={`/media/${post.cover_media_id}`} alt="" />}
+    <div class="prose" set:html={post.body_html} />
+  </article> : <div class="not-found"><p class="eyebrow">404</p><h1>Story not found.</h1><p>It may have moved or is not published yet.</p><a class="button primary" href="/">Back to stories</a></div>}
+</Base>

@@ -1,0 +1,6 @@
+# Local development only. Never use this bypass in production.
+DEV_AUTH_EMAIL=owner@example.test
+
+# Production: set these with `wrangler secret put` or your deployment environment.
+# ACCESS_TEAM_DOMAIN=your-team.cloudflareaccess.com
+# ACCESS_AUD=your-access-application-audience

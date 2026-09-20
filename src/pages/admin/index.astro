@@ -1,0 +1,41 @@
+---
+import { env } from 'cloudflare:workers';
+import Base from '../../layouts/Base.astro';
+
+interface Item { id: string; title: string; slug: string; status: string; version: number; updated_at: string; author_email: string; published_revision_id: string | null }
+const user = Astro.locals.user!;
+const { results: posts } = await env.DB.prepare(`
+  SELECT p.id, p.title, p.slug, p.status, p.version, p.updated_at, p.published_revision_id, u.email AS author_email
+  FROM posts p JOIN users u ON u.id = p.author_id
+  WHERE (? != 'author' OR p.author_id = ?)
+  ORDER BY p.updated_at DESC LIMIT 100
+`).bind(user.role, user.id).all<Item>();
+---
+<Base title="Posts · Northstar CMS" admin userEmail={user.email}>
+  <div class="admin-heading"><div><p class="eyebrow">Content</p><h1>Posts</h1><p>Write, review, and publish your stories.</p></div><button id="new-post" class="button primary">+ New post</button></div>
+  <div class="post-list">
+    <div class="list-head"><span>Title</span><span>Status</span><span>Author</span><span>Updated</span></div>
+    {posts.length ? posts.map((post) => <a class="post-row" href={`/admin/posts/${post.id}`}>
+      <span class="post-title">{post.title || 'Untitled draft'}<small>{post.slug ? `/blog/${post.slug}` : 'No slug yet'}</small></span>
+      <span><span class:list={['status', post.status]}>{post.status}</span></span>
+      <span class="muted">{post.author_email}</span>
+      <time class="muted" datetime={post.updated_at}>{new Date(post.updated_at).toLocaleDateString('en', { month: 'short', day: 'numeric', year: 'numeric' })}</time>
+    </a>) : <p class="empty-state">No posts yet. Create your first story.</p>}
+  </div>
+  <p id="create-error" class="error" role="alert"></p>
+  <script>
+    document.getElementById('new-post')?.addEventListener('click', async () => {
+      const button = document.getElementById('new-post') as HTMLButtonElement;
+      button.disabled = true;
+      try {
+        const response = await fetch('/admin/api/posts', { method: 'POST' });
+        const data = await response.json() as { error?: string; id: string };
+        if (!response.ok) throw new Error(data.error || 'Could not create post');
+        location.href = `/admin/posts/${data.id}`;
+      } catch (error) {
+        document.getElementById('create-error')!.textContent = String(error);
+        button.disabled = false;
+      }
+    });
+  </script>
+</Base>

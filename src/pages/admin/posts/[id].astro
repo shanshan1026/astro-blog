@@ -1,0 +1,18 @@
+---
+import Base from '../../../layouts/Base.astro';
+import PostEditor from '../../../components/PostEditor';
+import { canEdit } from '../../../lib/auth';
+import { getPost } from '../../../lib/posts';
+
+const user = Astro.locals.user!;
+const post = await getPost(Astro.params.id ?? '');
+if (!post || !canEdit(user, post.author_id)) return Astro.redirect('/admin');
+const editorPost = {
+  id: post.id, title: post.title, slug: post.slug, excerpt: post.excerpt,
+  body: JSON.parse(post.draft_json), coverMediaId: post.cover_media_id,
+  status: post.status, version: post.version, publishedSlug: post.published_slug,
+};
+---
+<Base title={`${post.title || 'New post'} · Northstar CMS`} admin userEmail={user.email}>
+  <PostEditor client:load post={editorPost} canPublish={user.role !== 'author'} />
+</Base>

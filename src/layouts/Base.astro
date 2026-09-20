@@ -1,0 +1,35 @@
+---
+import '../styles/global.css';
+interface Props { title: string; admin?: boolean; userEmail?: string }
+const { title, admin = false, userEmail } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>{title}</title>
+  </head>
+  <body class:list={{ admin }}>
+    {admin ? (
+      <div class="admin-shell">
+        <aside class="admin-sidebar">
+          <a class="admin-brand" href="/admin">Northstar<span>CMS</span></a>
+          <nav aria-label="Admin navigation">
+            <a href="/admin">Posts</a>
+            <a href="/">View site</a>
+          </nav>
+          <div class="admin-account">{userEmail}</div>
+        </aside>
+        <main class="admin-main"><slot /></main>
+      </div>
+    ) : (
+      <>
+        <header class="site-header"><a class="site-brand" href="/">Northstar Journal</a><nav><a href="/">All stories</a></nav></header>
+        <main class="site-main"><slot /></main>
+        <footer class="site-footer">Built with Astro and Cloudflare.</footer>
+      </>
+    )}
+  </body>
+</html>
