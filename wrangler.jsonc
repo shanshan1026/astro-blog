@@ -9,6 +9,20 @@
 	"compatibility_flags": [
 		"nodejs_compat"
 	],
+	"routes": [
+		{
+			"pattern": "331026.cc.cd/*",
+			"zone_name": "331026.cc.cd"
+		},
+		{
+			"pattern": "shanhua.cc.cd",
+			"custom_domain": true
+		}
+	],
+	"workers_dev": true,
+	"vars": {
+		"ADMIN_HOST": "shanhua.cc.cd"
+	},
 	"kv_namespaces": [
 		{
 			"binding": "SESSION",
